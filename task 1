@@ -1,0 +1,115 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNQplR3tVQZBgHiQXgyiZC4",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/mukthipriya/aiml-intership/blob/main/task%201\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "cme6wyDVIKsQ"
+      },
+      "outputs": [],
+      "source": [
+        "# 📌 Step 1: Import Libraries and Load the Dataset\n",
+        "\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import seaborn as sns\n",
+        "import matplotlib.pyplot as plt\n",
+        "from sklearn.preprocessing import LabelEncoder, StandardScaler\n",
+        "from sklearn.impute import SimpleImputer\n",
+        "\n",
+        "# Load Titanic dataset\n",
+        "url = \"https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv\"\n",
+        "df = pd.read_csv(url)\n",
+        "\n",
+        "# Preview data\n",
+        "print(df.head())\n",
+        "\n",
+        "# Info\n",
+        "print(\"\\n🔍 Dataset Info:\")\n",
+        "print(df.info())\n",
+        "\n",
+        "# Check nulls\n",
+        "print(\"\\n🧹 Missing Values:\")\n",
+        "print(df.isnull().sum())\n",
+        "# 📌 Step 2: Handle Missing Values\n",
+        "\n",
+        "# Impute numerical columns with mean\n",
+        "num_cols = df.select_dtypes(include=['int64', 'float64']).columns\n",
+        "num_imputer = SimpleImputer(strategy='mean')\n",
+        "df[num_cols] = num_imputer.fit_transform(df[num_cols])\n",
+        "\n",
+        "# Impute categorical columns with most frequent\n",
+        "cat_cols = df.select_dtypes(include=['object']).columns\n",
+        "cat_imputer = SimpleImputer(strategy='most_frequent')\n",
+        "df[cat_cols] = cat_imputer.fit_transform(df[cat_cols])\n",
+        "\n",
+        "print(\"\\n✅ Missing Values After Imputation:\")\n",
+        "print(df.isnull().sum())\n",
+        "# 📌 Step 3: Encode Categorical Features\n",
+        "\n",
+        "le = LabelEncoder()\n",
+        "for col in cat_cols:\n",
+        "    df[col] = le.fit_transform(df[col])\n",
+        "\n",
+        "print(\"\\n🧠 Encoded Dataset Preview:\")\n",
+        "print(df.head())\n",
+        "# 📌 Step 4: Normalize/Standardize Numerical Features\n",
+        "\n",
+        "scaler = StandardScaler()\n",
+        "df[num_cols] = scaler.fit_transform(df[num_cols])\n",
+        "\n",
+        "print(\"\\n📏 Scaled Numerical Features:\")\n",
+        "print(df[num_cols].describe())\n",
+        "# 📌 Step 5: Visualize Outliers and Remove Them\n",
+        "\n",
+        "# Boxplots\n",
+        "for col in num_cols:\n",
+        "    plt.figure(figsize=(6, 3))\n",
+        "    sns.boxplot(x=df[col])\n",
+        "    plt.title(f'Boxplot: {col}')\n",
+        "    plt.show()\n",
+        "\n",
+        "# Remove outliers using IQR\n",
+        "def remove_outliers(df, columns):\n",
+        "    for col in columns:\n",
+        "        Q1 = df[col].quantile(0.25)\n",
+        "        Q3 = df[col].quantile(0.75)\n",
+        "        IQR = Q3 - Q1\n",
+        "        lower = Q1 - 1.5 * IQR\n",
+        "        upper = Q3 + 1.5 * IQR\n",
+        "        df = df[(df[col] >= lower) & (df[col] <= upper)]\n",
+        "    return df\n",
+        "\n",
+        "df_cleaned = remove_outliers(df, num_cols)\n",
+        "\n",
+        "print(\"\\n📊 Shape After Outlier Removal:\", df_cleaned.shape)\n"
+      ]
+    }
+  ]
+}
